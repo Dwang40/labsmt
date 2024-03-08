@@ -1,4 +1,3 @@
-package Maze;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -8,22 +7,30 @@ public class Maze {
 
     private boolean animate;
 
-    private char[][] maze;
-    private int startRow;
-    private int startCol;
-
+    public char[][] maze;
+    public int[] pos = new int[4];
+    
     public Maze(String filepath, boolean animate) throws FileNotFoundException{
         maze = readFile(filepath);
+        pos[2] = -1;
         for(int row = 0; row < maze.length; row ++){
             for(int column = 0; column < maze[row].length; column ++){
                 if(maze[row][column] == 'S'){
-                    startRow = row; 
-                    startCol = column;
+                    pos[0] = row; 
+                    pos[1] = column;
                 }
             }
         }
-        System.out.println("Start: "  + startRow + ", " + startCol);
-        
+        for(int row = 0; row < maze.length; row ++){
+            for(int column = 0; column < maze[row].length; column ++){
+                if(maze[row][column] == 'E'){
+                    pos[2] = row; 
+                    pos[3] = column;
+                }
+            }
+        }
+        System.out.println("Start: "  + pos[0] + ", " + pos[1]);
+        System.out.println("End: "  + pos[2] + ", " + pos[3]);
     }
 
     public Maze(String filepath) throws FileNotFoundException{
@@ -34,40 +41,121 @@ public class Maze {
      * base case: 
      * - if current square is valid
      * - if not, break somehow
-     * recurion:
+     * recursion:
      * - all four steps
      */
-    public String solve(int row, int col){
-        
-        if(!isValid(row, col) || maze[row][col] == '#'){
-            
+    int foundE;
+    int r;
+    int c;
+    public void introw(){
+        this.r++;
+    }
+    public void derow(){
+        this.r--;
+    }
+    public void intcol(){
+        this.c ++;
+    }
+    public void decol(){
+        this.c--;
+    }
+    public void intfound(){
+        this.foundE++;
+    }
+    public void defound(){
+        this.foundE--;
+    }
+    public String solve(int row, int col) throws FileNotFoundException{
+        char[][] maze = readFile("maze1.txt");
+        int totalE = 1;
+        int steps = 0;
+        r = row;
+        c = col;
+        maze[row][col] = '@';
+        if(pos[2] == -1){
+            return "There is no solution";
         }
+        //while(foundE < totalE){
+        for(int i = 0; i < 200; i++){
+            if(maze[r-1][c] == 'E'){
+                steps++;
+                intfound();
+            }
+            if(canMove(r-1, c) == true){
+                if(maze[r-1][c] != '@'){
+                    maze[r-1][c] = '@';
+                    derow();
+                }
+            }
+            if(maze[r+1][c] == 'E'){
+                steps++;
+                intfound();
+            }
+            if(canMove(r+1, c) == true){
+                if(maze[r+1][c] != '@'){
+                    maze[r+1][c] = '@';
+                    introw();
+                }
+            }
+            if(maze[r][c-1] == 'E'){
+                steps++;
+                intfound();
+            }
+            if(canMove(r, c-1) == true){
+                if(maze[r][c-1] != '@'){
+                    maze[r][c-1] = '@';
+                    decol();
+                }
+            }
+            if(maze[r-1][c+1] == 'E'){
+                steps++;
+                intfound();
+            }
+            if(canMove(r, c+1) == true){
+                if(maze[r][c+1] != '@'){
+                    maze[r][c+1] = '@';
+                    intcol();
+                }
+            }
+        }
+        System.out.println(arrToString(maze));
+        r = 0;
+        c = 0;
+        return "";
     }
 
-    public boolean isValid(int row, int col){
-        return row > -1 && row < maze.length && col > -1 && col < maze[row].length;
+    public boolean canMove(int row, int col) throws FileNotFoundException{
+        char[][] maze = readFile("maze1.txt");
+        if(row < 1 || col < 1){
+            return false;
+        }
+        if(row > maze.length-2 || col > maze[0].length-2){
+            return false;
+        }
+        if(maze[row][col] == ' '){
+            return true;
+        }
+        if(maze[row][col] == '@'){
+            return false;
+        }
+        return false;
+    } 
+
+    public Maze(){
     }
-
-
-
-
-
-
-
 
     public static void main(String[] args) throws FileNotFoundException{
-        // char[][] maze = readFile("maze1.txt");
-        // System.out.println(arrToString(maze));
-        Maze m = new Maze("maze1.txt");
+        Maze a = new Maze();
+        lol b = new lol();
+         //char[][] maze = readFile("maze2.txt");
+         //System.out.println(arrToString(maze));
+        //Maze m = new Maze("maze2.txt");
+        //System.out.println(a.startCol + " " + a.startRow);
+        a.solve(b.post(0), b.post(1));
     
     }
 
-
-
-
-
-
-    public static char[][] readFile(String filepath) throws FileNotFoundException{
+    public char[][] readFile(String filepath) throws FileNotFoundException{
         char[][] parsed = null;
        
         Scanner sc = new Scanner(new File(filepath));
@@ -93,9 +181,6 @@ public class Maze {
             row ++;
         }
         sc.close();
-
-       
-
         return parsed;
     }
 
